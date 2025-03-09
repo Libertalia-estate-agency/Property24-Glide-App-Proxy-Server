@@ -16,7 +16,15 @@ app.use(cors()); // Allow requests from any frontend
 app.use(bodyParser.json());     // parse application/json
 app.use(morgan('dev'));
 
-const API_URL = "https://api.property24.com/listing/v52/";
+const PROPERTY24_API_BASE = "https://api.property24.com/listing/v52/";
+const API_USERNAME = "38530@libertaliaproperties.co.za";
+const API_PASSWORD = "Autumn2025";
+
+// Function to generate Basic Auth header
+const getAuthHeader = () => {
+  const auth = Buffer.from(`${API_USERNAME}:${API_PASSWORD}`).toString("base64");
+  return `Basic ${auth}`;
+};
 
 const proxyOptions = {
   target: API_URL,
@@ -57,9 +65,6 @@ app.get("/", async (req, res, next) => {
 });
 
 
-// Property24 API Base URL
-const PROPERTY24_API_BASE = "https://api.property24.com/listing/v52";
-
 // API Key (if required)
 //const API_KEY = process.env.PROPERTY24_API_KEY; // Store this in a .env file
 
@@ -74,7 +79,7 @@ app.get("/echo", async (req, res, next) => {
   try {
       
       //const url = baseURL + '';
-      const url = 'https://api.property24.com/listing/v52/echo';
+      const url = 'https://api.property24.com/listing/v52';
       console.log("ECHO GET ::: QUERY :: " + JSON.stringify(req.query)); 
       
       const options = {
@@ -110,7 +115,58 @@ app.get("/echo", async (req, res, next) => {
               });
         
               res.json(response.data);
+              next();
+  } catch(error) {
 
+      console.log("ERROR :::: " + error)
+      res.status(500).json({ message: error });
+  }
+});
+
+
+app.get("/echo-authenticated", async (req, res, next) => {
+  try {
+      
+    const url = `${PROPERTY24_API_BASE}/echo-authenticated`;
+      console.log("ECHO GET ::: QUERY :: " + JSON.stringify(req.query)); 
+      
+      
+      const options = {
+          params: { stringToEcho: req.query.stringToEcho},
+          headers: {
+            Authorization: getAuthHeader(), // Fix authentication
+            "Content-Type": "application/json",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Access-Control-Allow-Origin": "*",
+          },
+      };
+      
+      //console.log("REQ PARAMS :: " + JSON.stringify(req.params)); 
+      
+      //console.log("REQ PROTOCOL :: " + (req.protocol)); 
+      //console.log("REQ HOSTNAME :: " + (req.hostname)); 
+      //console.log("REQ PATH :: " + (req.path)); 
+      //console.log("REQ ORIGINAL URL :: " + (req.originalUrl)); 
+      //console.log("REQ SUBDOMAINS :: " + (req.subdomains)); 
+      
+      const response = await axios.get(url, options)
+              .then(function (response) {
+                  console.log("Property24 RESPONSE ::: " + response.data);
+                  //console.log("RESPONSE HEADERS :::: " + response.headers);
+                  //console.log("RESPONSE STATUS :::: " + response.status);
+                  //console.log("RESPONSE CONFIG :::: " + JSON.stringify(response.config));
+                  //console.log("RESPONSE REQUEST :::: " + response.request);
+                  //console.log("RESPONSE STATUS TEXT :::: " + response.statusText);
+                  
+                  //res.status(200).json(response.data);
+              })
+              .catch(function (error) {
+                  console.error(error);
+              });
+
+      res.json(response.data);
+
+      next();
   } catch(error) {
 
       console.log("ERROR :::: " + error)
