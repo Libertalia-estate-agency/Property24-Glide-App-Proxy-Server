@@ -8,7 +8,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
@@ -16,7 +16,7 @@ app.use(cors()); // Allow requests from any frontend
 app.use(bodyParser.json());     // parse application/json
 app.use(morgan('dev'));
 
-const PROPERTY24_API_BASE = "https://api.property24.com/listing/v52/";
+const PROPERTY24_API_BASE = "https://api.property24.com/listing/v52";
 const API_USERNAME = "38530@libertaliaproperties.co.za";
 const API_PASSWORD = "Autumn2025";
 const AGENCY_ID = "38530";
@@ -38,7 +38,7 @@ const proxyOptions = {
 
 const proxy = createProxyMiddleware(proxyOptions);
 
-app.use('/', proxy);
+//app.use('/', proxy);
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");  // Allow all origins (you can restrict this to specific domains for security)
@@ -48,17 +48,10 @@ app.use((req, res, next) => {
 });
 
 
-app.get("/", async (req, res, next) => {
-  try {
-      
-      res.send("WELCOME TO PROPERTY24 PROXY SERVER");
-
-  } catch(error) {
-
-      console.log("ERROR :::: " + error)
-      res.status(500).json({ message: error });
-  }
+app.get("/", async (req, res) => {
+  res.send("WELCOME TO PROPERTY24 PROXY SERVER");
 });
+
 
 
 // API Key (if required)
@@ -219,16 +212,22 @@ app.get("/agencies/:agencyId/agents", async (req, res, next) => {
   }
 });
 
+
+// Route to Create an Agent
 app.put("/agents/:agentId/profile-picture", async (req, res, next) => {
   try {
       
-    const url = `${PROPERTY24_API_BASE}/agents/${req.query}/profile-picture`;
-      
+    
+    const { agentId } = req.params;
+    const { bytes,mimeContentType, caption } = req.body;
+
+
+    const url = `${PROPERTY24_API_BASE}/agents/${agentId}/profile-picture`;
+
     const options = {
       headers: {
         Authorization: getAuthHeader(), // Fix authentication
         "Content-Type": "application/json",
-        "Accept-Encoding": "gzip, deflate, br",
         "Access-Control-Allow-Origin": "*",
         "User-Agent": "Node.js/Express"
       },
@@ -240,7 +239,14 @@ app.put("/agents/:agentId/profile-picture", async (req, res, next) => {
       //console.log("REQ ORIGINAL URL :: " + (req.originalUrl)); 
       //console.log("REQ SUBDOMAINS :: " + (req.subdomains)); 
       
-      const response = await axios.put(url, options)
+      const payload = {
+        image: bytes, // The image data in base64 or raw bytes
+        mimeContentTyp: mimeContentType,
+        caption: caption,
+
+      };
+
+      const response = await axios.put(url,payload, options)
               .then(function (response) {
                   console.log("Property24 RESPONSE ::: " + JSON.stringify(response.data));
                    //console.log("RESPONSE HEADERS :::: " + response.headers);
@@ -254,8 +260,9 @@ app.put("/agents/:agentId/profile-picture", async (req, res, next) => {
               .catch(function (error) {
                   console.error(error);
               });
+              res.status(response.status).json(response.data);
 
-              res.json(response.data);
+              //res.json(response.data);
 
           next();
 
@@ -266,7 +273,6 @@ app.put("/agents/:agentId/profile-picture", async (req, res, next) => {
   }
 });
 
-// Route to Create an Agent
 app.post("/agents", async (req, res) => {
   try {
     const response = await axios.post(`${PROPERTY24_API_BASE}/agents`, req.body, {
