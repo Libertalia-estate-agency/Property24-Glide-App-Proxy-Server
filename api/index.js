@@ -225,7 +225,52 @@ app.get("/agencies/:agencyId/agents", async (req, res, next) => {
   }
 });
 
+app.put("/agents/:agentId/profile-picture", async (req, res, next) => {
+  try {
+      
+    const url = `${PROPERTY24_API_BASE}/agents/${req.query}/profile-picture`;
+      
+    const options = {
+      headers: {
+        Authorization: getAuthHeader(), // Fix authentication
+        "Content-Type": "application/json",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Access-Control-Allow-Origin": "*",
+        "User-Agent": "Node.js/Express"
+      },
+  };
+       
+      //console.log("REQ PROTOCOL :: " + (req.protocol)); 
+      //console.log("RES HOSTNAME :: " + (req.hostname)); 
+      //console.log("REQ PATH :: " + (req.path)); 
+      //console.log("REQ ORIGINAL URL :: " + (req.originalUrl)); 
+      //console.log("REQ SUBDOMAINS :: " + (req.subdomains)); 
+      
+      const response = await axios.put(url, options)
+              .then(function (response) {
+                  console.log("Property24 RESPONSE ::: " + JSON.stringify(response.data));
+                   //console.log("RESPONSE HEADERS :::: " + response.headers);
+                  //console.log("RESPONSE STATUS :::: " + response.status);
+                  //console.log("RESPONSE CONFIG :::: " + JSON.stringify(response.config));
+                  //console.log("RESPONSE REQUEST :::: " + (response.request).json);
+                  //console.log("RESPONSE STATUS TEXT :::: " + response.statusText);
+                  
+                  //res.status(200).json(response.data);
+              })
+              .catch(function (error) {
+                  console.error(error);
+              });
 
+              res.json(response.data);
+
+          next();
+
+  } catch(error) {
+
+      console.log("ERROR :::: " + error)
+      res.status(500).json({ message: error });
+  }
+});
 
 // Route to Create an Agent
 app.post("/agents", async (req, res) => {
@@ -239,6 +284,10 @@ app.post("/agents", async (req, res) => {
     res.status(error.response?.status || 500).json(error.response?.data || { error: "Failed to create agent" });
   }
 });
+
+//Route to Update Agent Profile Picture
+
+
 
 // Route to Create a Listing
 app.post("/listings", async (req, res) => {
@@ -265,3 +314,18 @@ app.get("/listings", async (req, res) => {
     res.status(error.response?.status || 500).json(error.response?.data || { error: "Failed to fetch listings" });
   }
 });
+
+
+// Start the server locally
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server is running locally at http://localhost:${PORT}`);
+  });
+}
+
+
+/**
+ * Start Server
+ */
+// Export the Express app for Vercel
+module.exports = app;
