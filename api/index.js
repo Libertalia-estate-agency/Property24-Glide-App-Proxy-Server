@@ -48,12 +48,6 @@ app.use((req, res, next) => {
 });
 
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`Proxy server running on http://localhost:${PORT}`);
-});
-
-
 app.get("/", async (req, res, next) => {
   try {
       
