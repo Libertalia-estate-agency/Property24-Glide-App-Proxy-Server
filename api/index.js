@@ -362,7 +362,7 @@ app.post("/agents", async (req, res, next) => {
       
       const url = `${PROPERTY24_API_BASE}/agents`;
 
-      console.log("ECHO GET ::: QUERY :: " + JSON.stringify(req.query)); 
+      //console.log("ECHO GET ::: QUERY :: " + JSON.stringify(req.query)); 
       
       const options = {
         headers: {
@@ -371,9 +371,10 @@ app.post("/agents", async (req, res, next) => {
         },
       };
       
-      console.log("REQ BODY :::: " + JSON.stringify(req.body));
+      //console.log("REQ PARAMS :: " + JSON.stringify(req.params)); 
 
-      const agentData = req.body;      //console.log("REQ PARAMS :: " + JSON.stringify(req.params)); 
+      const agentData = req.body;      
+      console.log("REQ BODY :::: " + JSON.stringify(req.body));
       
       //console.log("REQ PROTOCOL :: " + (req.protocol)); 
       //console.log("REQ HOSTNAME :: " + (req.hostname)); 
