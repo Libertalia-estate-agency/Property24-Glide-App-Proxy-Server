@@ -82,7 +82,11 @@ app.get("/echo", async (req, res, next) => {
               'Accept-Encoding': 'gzip, deflate, br',
               'Access-Control-Allow-Origin': '*'
           },
-          params: { stringToEcho: req.query.stringToEcho},
+          params: { 
+            
+            stringToEcho: req.query.stringToEcho,
+
+          },
       }; 
       
       ///console.log("REQ HEADERS :: " + JSON.stringify(req.headers)); 
@@ -265,7 +269,7 @@ app.get("/agencies/:agencyId/agents", async (req, res, next) => {
 });
 
 
-// Route to Create an Agent
+//Route to Update Agent Profile Picture
 app.put("/agents/:agentId/profile-picture", async (req, res, next) => {
   try {
       
@@ -357,7 +361,7 @@ app.put("/agents", async (req, res) => {
   }
 });
 
-
+// Route to Create an Agent
 app.post("/agents", async (req, res, next) => {
   try {
       
@@ -406,22 +410,105 @@ app.post("/agents", async (req, res, next) => {
   }
 });
 
-//Route to Update Agent Profile Picture
-
-
-
 // Route to Create a Listing
 app.post("/listings", async (req, res) => {
   try {
-    const response = await axios.post(`${PROPERTY24_API_BASE}/listings`, req.body, {
-      headers: getHeaders(),
-    });
-    res.json(response.data);
+
+    const url = `${PROPERTY24_API_BASE}/listings`;
+
+    const options = {
+      headers: {
+        Authorization: getAuthHeader(),
+        "Content-Type": "application/json",
+      },
+    };
+
+    const listingData = req.body;
+
+    const response = await axios.post(url, listingData, options);
+    res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error creating listing:", error.response?.data || error.message);
     res.status(error.response?.status || 500).json(error.response?.data || { error: "Failed to create listing" });
   }
 });
+
+
+app.put("/listings", async (req, res) => {
+  try {
+     
+    const listingData = req.body; // JSON body from Glide
+    //console.log("REQ BODY :: " + JSON.stringify(req.body));
+
+    if (!listingData || Object.keys(listingData).length === 0) {
+      return res.status(400).json({ error: "Missing listing data" });
+    }
+
+    //console.log("Received agent update data:", agentData);
+
+    const url = `${PROPERTY24_API_BASE}/listings`;
+
+    const options = {
+      headers: {
+        Authorization: getAuthHeader(),
+        "Content-Type": "application/json",
+      },
+    };
+
+    const response = await axios.put(url, listingData, options);
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error("Error updating listing info:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to update listing information" });
+  }
+});
+
+//Route to Update Listing Status
+app.put("/listings/:listingNumber/status", async (req, res, next) => {
+  try {
+      
+    
+    const { listingNumber } = req.params;
+    console.log("req.params ::: " + JSON.stringify(req.params));
+    console.log("Listing Number :: " + JSON.stringify(listingNumber));
+
+    const { status } = req.query;
+    console.log("req.query :: " + JSON.stringify(req.query));
+
+    const url = `${PROPERTY24_API_BASE}/listings/${listingNumber}/status`;
+
+    const options = {
+      params: {
+        listingNumber: req.params.listingNumber, 
+        listingStatus: req.query.listingStatus 
+      },
+      headers: {
+        Authorization: getAuthHeader(), // Fix authentication
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+  };
+       
+      //console.log("REQ PROTOCOL :: " + (req.protocol)); 
+      //console.log("RES HOSTNAME :: " + (req.hostname)); 
+      //console.log("REQ PATH :: " + (req.path)); 
+      //console.log("REQ ORIGINAL URL :: " + (req.originalUrl)); 
+      //console.log("REQ SUBDOMAINS :: " + (req.subdomains)); 
+      
+      const response = await axios.put(url,status, options);
+      res.status(response.status).json(response.data);
+
+              //res.json(response.data);
+
+          next();
+
+  } catch(error) {
+
+      console.log("ERROR :::: " + error)
+      res.status(500).json({ message: error });
+  }
+});
+
 
 // Route to Fetch Listings
 app.get("/listings", async (req, res) => {
