@@ -68,8 +68,9 @@ const getHeaders = () => ({
 app.get("/echo", async (req, res, next) => {
   try {
       
-      //const url = baseURL + '';
-      const url = 'https://api.property24.com/listing/v52';
+      const url = `${PROPERTY24_API_BASE}/echo`;
+      console.log("URL :: " + JSON.stringify(url)); 
+
       console.log("ECHO GET ::: QUERY :: " + JSON.stringify(req.query)); 
       
       const options = {
@@ -98,18 +99,18 @@ app.get("/echo", async (req, res, next) => {
                   //console.log("RESPONSE REQUEST :::: " + response.request);
                   //console.log("RESPONSE STATUS TEXT :::: " + response.statusText);
                   
-                  //res.status(200).json(response.data);
+                  res.status(200).json(response.data);
               })
               .catch(function (error) {
                   console.error(error);
               });
         
-              res.json(response.data);
+              //res.json(response);
               next();
   } catch(error) {
 
       console.log("ERROR :::: " + error)
-      res.status(500).json({ message: error });
+      //res.status(500).json({ message: error });
   }
 });
 
@@ -148,13 +149,13 @@ app.get("/echo-authenticated", async (req, res, next) => {
                   //console.log("RESPONSE REQUEST :::: " + response.request);
                   //console.log("RESPONSE STATUS TEXT :::: " + response.statusText);
                   
-                  //res.status(200).json(response.data);
+                  res.status(200).json(response.data);
               })
               .catch(function (error) {
                   console.error(error);
               });
 
-      res.json(response.data);
+      //res.json(response);
 
       next();
   } catch(error) {
@@ -164,6 +165,55 @@ app.get("/echo-authenticated", async (req, res, next) => {
   }
 });
 
+app.get("/agents/:agentId", async (req, res, next) => {
+  try {
+      console.log("REQ PARAMS :: " + JSON.stringify(req.params)); 
+      console.log("REQ QUERY :: " + JSON.stringify(req.query)); 
+
+      //const url = 'https://api.exdev.property24-test.com/listing/v49/agents/75003';
+      //const url = `${PROPERTY24_API_BASE}/agents/${req.query}`;
+      const url = `${PROPERTY24_API_BASE}/agents/${req.params.agentId}`;
+
+      const options = {
+        params: { agentId: req.query.agentId},
+        headers: {
+          Authorization: getAuthHeader(), // Fix authentication
+          "Content-Type": "application/json",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Access-Control-Allow-Origin": "*",
+        },
+    };
+    
+      //console.log("REQ PROTOCOL :: " + (req.protocol)); 
+
+      //console.log("REQ PROTOCOL :: " + (req.protocol)); 
+      //console.log("REQ HOSTNAME :: " + (req.hostname)); 
+      //console.log("REQ PATH :: " + (req.path)); 
+      //console.log("REQ ORIGINAL URL :: " + (req.originalUrl)); 
+      //console.log("REQ SUBDOMAINS :: " + (req.subdomains)); 
+      
+      const response = await axios.get(url, options)
+              .then(function (response) {
+                  //console.log("Property24 RESPONSE ::: " + JSON.stringify(response.data));
+                  //console.log("RESPONSE HEADERS :::: " + response.headers);
+                  //console.log("RESPONSE STATUS :::: " + response.status);
+                  //console.log("RESPONSE CONFIG :::: " + JSON.stringify(response.config));
+                  //console.log("RESPONSE REQUEST :::: " + (response.request).json);
+                  //console.log("RESPONSE STATUS TEXT :::: " + response.statusText);
+                  
+                  res.status(200).json(response.data);
+              })
+              .catch(function (error) {
+                  console.error(error);
+              });
+          next();
+
+  } catch(error) {
+
+      console.log("ERROR :::: " + error)
+      res.status(500).json({ message: error });
+  }
+});
 
 app.get("/agencies/:agencyId/agents", async (req, res, next) => {
   try {
@@ -188,20 +238,20 @@ app.get("/agencies/:agencyId/agents", async (req, res, next) => {
       
       const response = await axios.get(url, options)
               .then(function (response) {
-                  console.log("Property24 RESPONSE ::: " + JSON.stringify(response.data));
+                  //console.log("Property24 RESPONSE ::: " + JSON.stringify(response.data));
                    //console.log("RESPONSE HEADERS :::: " + response.headers);
                   //console.log("RESPONSE STATUS :::: " + response.status);
                   //console.log("RESPONSE CONFIG :::: " + JSON.stringify(response.config));
                   //console.log("RESPONSE REQUEST :::: " + (response.request).json);
                   //console.log("RESPONSE STATUS TEXT :::: " + response.statusText);
                   
-                  //res.status(200).json(response.data);
+                  res.status(200).json(response.data);
               })
               .catch(function (error) {
                   console.error(error);
               });
 
-              res.json(response.data);
+              //res.json(response.data);
 
           next();
 
