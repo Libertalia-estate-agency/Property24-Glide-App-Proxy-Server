@@ -11,7 +11,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
 app.use(cors()); // Allow requests from any frontend
 app.use(bodyParser.json());     // parse application/json
 app.use(morgan('dev'));
@@ -175,7 +177,7 @@ app.get("/agents/:agentId", async (req, res, next) => {
       const url = `${PROPERTY24_API_BASE}/agents/${req.params.agentId}`;
 
       const options = {
-        params: { agentId: req.query.agentId},
+        params: { agentId: req.params.agentId},
         headers: {
           Authorization: getAuthHeader(), // Fix authentication
           "Content-Type": "application/json",
@@ -226,7 +228,6 @@ app.get("/agencies/:agencyId/agents", async (req, res, next) => {
         "Content-Type": "application/json",
         "Accept-Encoding": "gzip, deflate, br",
         "Access-Control-Allow-Origin": "*",
-        "User-Agent": "Node.js/Express"
       },
   };
        
@@ -269,8 +270,11 @@ app.put("/agents/:agentId/profile-picture", async (req, res, next) => {
       
     
     const { agentId } = req.params;
+    console.log("AGENT ID :: " + agentId);
     const { bytes,mimeContentType, caption } = req.body;
+    //console.log("REQ BODY :: " + JSON.stringify(req.body));
 
+    console.log("Received image size:", Buffer.byteLength(bytes, "base64"), "bytes");
 
     const url = `${PROPERTY24_API_BASE}/agents/${agentId}/profile-picture`;
 
@@ -279,7 +283,6 @@ app.put("/agents/:agentId/profile-picture", async (req, res, next) => {
         Authorization: getAuthHeader(), // Fix authentication
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
-        "User-Agent": "Node.js/Express"
       },
   };
        
@@ -290,7 +293,7 @@ app.put("/agents/:agentId/profile-picture", async (req, res, next) => {
       //console.log("REQ SUBDOMAINS :: " + (req.subdomains)); 
       
       const payload = {
-        image: bytes, // The image data in base64 or raw bytes
+        bytes: bytes, // The image data in base64 or raw bytes
         mimeContentTyp: mimeContentType,
         caption: caption,
 
@@ -298,19 +301,19 @@ app.put("/agents/:agentId/profile-picture", async (req, res, next) => {
 
       const response = await axios.put(url,payload, options)
               .then(function (response) {
-                  console.log("Property24 RESPONSE ::: " + JSON.stringify(response.data));
+                  //console.log("Property24 RESPONSE ::: " + JSON.stringify(response.data));
                    //console.log("RESPONSE HEADERS :::: " + response.headers);
                   //console.log("RESPONSE STATUS :::: " + response.status);
                   //console.log("RESPONSE CONFIG :::: " + JSON.stringify(response.config));
                   //console.log("RESPONSE REQUEST :::: " + (response.request).json);
                   //console.log("RESPONSE STATUS TEXT :::: " + response.statusText);
                   
-                  //res.status(200).json(response.data);
+                  res.status(response.status).json(response.data);
               })
               .catch(function (error) {
                   console.error(error);
               });
-              res.status(response.status).json(response.data);
+              //res.status(response.status).json(response.data);
 
               //res.json(response.data);
 
@@ -323,15 +326,81 @@ app.put("/agents/:agentId/profile-picture", async (req, res, next) => {
   }
 });
 
-app.post("/agents", async (req, res) => {
+// Update Agent Info Endpoint
+app.put("/agents", async (req, res) => {
   try {
-    const response = await axios.post(`${PROPERTY24_API_BASE}/agents`, req.body, {
-      headers: getHeaders(),
-    });
-    res.json(response.data);
+     
+    const agentData = req.body; // JSON body from Glide
+    //console.log("REQ BODY :: " + JSON.stringify(req.body));
+
+    if (!agentData || Object.keys(agentData).length === 0) {
+      return res.status(400).json({ error: "Missing agent data" });
+    }
+
+    //console.log("Received agent update data:", agentData);
+
+    const url = `${PROPERTY24_API_BASE}/agents`;
+
+    const options = {
+      headers: {
+        Authorization: getAuthHeader(),
+        "Content-Type": "application/json",
+      },
+    };
+
+    const response = await axios.put(url, agentData, options);
+    res.status(response.status).json(response.data);
   } catch (error) {
-    console.error("Error creating agent:", error.response?.data || error.message);
-    res.status(error.response?.status || 500).json(error.response?.data || { error: "Failed to create agent" });
+    console.error("Error updating agent info:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to update agent information" });
+  }
+});
+
+
+app.post("/agents", async (req, res, next) => {
+  try {
+      
+      const url = `${PROPERTY24_API_BASE}/agents`;
+
+      console.log("ECHO GET ::: QUERY :: " + JSON.stringify(req.query)); 
+      
+      const options = {
+        headers: {
+          Authorization: getAuthHeader(),
+          "Content-Type": "application/json",
+        },
+      };
+      
+      console.log("REQ BODY :::: " + JSON.stringify(req.body));
+
+      const agentData = req.body;      //console.log("REQ PARAMS :: " + JSON.stringify(req.params)); 
+      
+      //console.log("REQ PROTOCOL :: " + (req.protocol)); 
+      //console.log("REQ HOSTNAME :: " + (req.hostname)); 
+      //console.log("REQ PATH :: " + (req.path)); 
+      //console.log("REQ ORIGINAL URL :: " + (req.originalUrl)); 
+      //console.log("REQ SUBDOMAINS :: " + (req.subdomains)); 
+      
+      const response = await axios.put(url, agentData, options)
+              .then(function (response) {
+                  //console.log("Property24 RESPONSE ::: " + response.data);
+                  //console.log("RESPONSE HEADERS :::: " + response.headers);
+                  //console.log("RESPONSE STATUS :::: " + response.status);
+                  //console.log("RESPONSE CONFIG :::: " + JSON.stringify(response.config));
+                  //console.log("RESPONSE REQUEST :::: " + response.request);
+                  //console.log("RESPONSE STATUS TEXT :::: " + response.statusText);
+                  
+                  res.status(response.status).json(response.data);
+              })
+              .catch(function (error) {
+                  console.error(error);
+              });
+      next();
+
+  } catch(error) {
+
+      console.log("ERROR :::: " + error)
+      res.status(500).json({ message: error });
   }
 });
 
