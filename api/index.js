@@ -60,12 +60,13 @@ app.get("/", async (req, res) => {
 //const API_KEY = process.env.PROPERTY24_API_KEY; // Store this in a .env file
 
 // Middleware for Authentication (If API Key is required)
+/**
 const getHeaders = () => ({
   "Content-Type": "application/json",
   "Authorization": `Bearer ${API_KEY}`,
   "User-Agent": "Node.js/Express"
 });
-
+ */
 
 app.get("/echo", async (req, res, next) => {
   try {
@@ -362,7 +363,7 @@ app.post("/agents", async (req, res, next) => {
       
       const url = `${PROPERTY24_API_BASE}/agents`;
 
-      //console.log("ECHO GET ::: QUERY :: " + JSON.stringify(req.query)); 
+      //console.log("ECHO GET ::: QUERY :: " + JSON.stringify(url)); 
       
       const options = {
         headers: {
@@ -374,7 +375,7 @@ app.post("/agents", async (req, res, next) => {
       //console.log("REQ PARAMS :: " + JSON.stringify(req.params)); 
 
       const agentData = req.body;      
-      console.log("REQ BODY :::: " + JSON.stringify(req.body));
+      //console.log("REQ BODY :::: " + JSON.stringify(req.body));
       
       //console.log("REQ PROTOCOL :: " + (req.protocol)); 
       //console.log("REQ HOSTNAME :: " + (req.hostname)); 
@@ -382,7 +383,7 @@ app.post("/agents", async (req, res, next) => {
       //console.log("REQ ORIGINAL URL :: " + (req.originalUrl)); 
       //console.log("REQ SUBDOMAINS :: " + (req.subdomains)); 
       
-      const response = await axios.put(url, agentData, options)
+      const response = await axios.post(url, agentData, options)
               .then(function (response) {
                   //console.log("Property24 RESPONSE ::: " + response.data);
                   //console.log("RESPONSE HEADERS :::: " + response.headers);
