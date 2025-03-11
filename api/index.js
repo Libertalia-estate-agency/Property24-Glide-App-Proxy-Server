@@ -487,7 +487,7 @@ app.put("/listings/:listingNumber/status", async (req, res, next) => {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
       },
-  };
+    };
        
       //console.log("REQ PROTOCOL :: " + (req.protocol)); 
       //console.log("RES HOSTNAME :: " + (req.hostname)); 
@@ -522,7 +522,65 @@ app.get("/listings", async (req, res) => {
     res.status(error.response?.status || 500).json(error.response?.data || { error: "Failed to fetch listings" });
   }
 });
+// Route to Fetch Listings
+app.get("/listings/reconciliation", async (req, res, next) => {
+  
+  const url = `${PROPERTY24_API_BASE}/listings/reconciliation`;
+  console.log("URL ::: " + JSON.stringify(url));
 
+  console.log("req.query ::: " + JSON.stringify(req.query));
+
+
+  const options = {
+    params: {
+      agentId: req.query.agentId, 
+    },
+    headers: {
+      Authorization: getAuthHeader(), // Fix authentication
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    },
+  };
+
+  const response = await axios.get(url, options);
+      res.status(response.status).json(response.data);
+
+              //res.json(response.data);
+
+          next();
+
+
+});
+
+
+app.get("/listings/leads", async (req, res, next) => {
+  
+  const url = `${PROPERTY24_API_BASE}/listings/leads`;
+  console.log("URL ::: " + JSON.stringify(url));
+
+  console.log("req.query ::: " + JSON.stringify(req.query));
+
+
+  const options = {
+    params: {
+      after: req.query.after, 
+    },
+    headers: {
+      Authorization: getAuthHeader(), // Fix authentication
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    },
+  };
+
+  const response = await axios.get(url, options);
+      res.status(response.status).json(response.data);
+
+              //res.json(response.data);
+
+          next();
+
+
+});
 
 // Start the server locally
 if (require.main === module) {
