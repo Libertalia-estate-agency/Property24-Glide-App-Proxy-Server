@@ -532,9 +532,9 @@ app.get("/listings/reconciliation", async (req, res, next) => {
 
 
   const options = {
-    params: {
-      agentId: req.query.agentId, 
-    },
+    params: req.query.agentId 
+    ? { agentId: req.query.agentId } 
+    : { agencyId: req.query.agencyId },
     headers: {
       Authorization: getAuthHeader(), // Fix authentication
       "Content-Type": "application/json",
