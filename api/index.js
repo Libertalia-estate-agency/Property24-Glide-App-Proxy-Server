@@ -172,6 +172,48 @@ app.get("/echo-authenticated", async (req, res, next) => {
   }
 });
 
+
+app.get("/suburbs/find-from-point", async (req, res, next) => {
+  try {
+      
+    const url = `${PROPERTY24_API_BASE}/suburbs/find-from-point`;
+      console.log("ECHO GET ::: QUERY :: " + JSON.stringify(req.query)); 
+      console.log("ECHO GET ::: PARAMS :: " + JSON.stringify(req.params)); 
+
+      
+      const options = {
+          params: { 
+            longitude: req.query.longitude,
+            latitude: req.query.latitude
+          },
+          headers: {
+            Authorization: getAuthHeader(), // Fix authentication
+            "Content-Type": "application/json",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Access-Control-Allow-Origin": "*",
+          },
+      };
+      
+       
+      const response = await axios.get(url, options)
+              .then(function (response) {
+                  console.log("Property24 RESPONSE ::: " + JSON.stringify(response.data));
+                   
+                  res.status(200).json(response.data);
+              })
+              .catch(function (error) {
+                  console.error(error);
+              });
+ 
+      next();
+  } catch(error) {
+
+      console.log("ERROR :::: " + error)
+      res.status(500).json({ message: error });
+  }
+});
+
+
 app.get("/agents/:agentId", async (req, res, next) => {
   try {
       console.log("REQ PARAMS :: " + JSON.stringify(req.params)); 
