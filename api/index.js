@@ -178,13 +178,11 @@ app.get("/suburbs/find-from-point", async (req, res, next) => {
       
     const url = `${PROPERTY24_API_BASE}/suburbs/find-from-point`;
       console.log("ECHO GET ::: QUERY :: " + JSON.stringify(req.query)); 
-      console.log("ECHO GET ::: PARAMS :: " + JSON.stringify(req.params)); 
-
       
       const options = {
           params: { 
-            longitude: req.query.longitude,
-            latitude: req.query.latitude
+            latitude: req.query.latitude,
+            longitude: req.query.longitude
           },
           headers: {
             Authorization: getAuthHeader(), // Fix authentication
