@@ -597,7 +597,7 @@ app.post("/agents", async (req, res, next) => {
 app.post("/listings", async (req, res) => {
   try {
 
-    //const url = `${PROPERTY24_API_BASE}/listings`;
+    const url = `${PROPERTY24_API_BASE}/listings`;
 
     const options = {
       headers: {
