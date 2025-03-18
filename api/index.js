@@ -617,6 +617,7 @@ app.post("/listings", async (req, res) => {
      // Convert all image URLs to Base64
      const processedPhotos = await Promise.all(
       photos.map(async (url) => {
+          //console.log("URL :::: " , JSON.stringify(url));
           const base64Image = await pictureToBase64(url);
           return base64Image ? { bytes: base64Image } : null;
       })
@@ -630,7 +631,7 @@ app.post("/listings", async (req, res) => {
         ...listingData,
         photos: finalPhotos
     };
-    console.log("REQ.BODY :::: FINAL PAYLOAD :::::: " + JSON.stringify(finalPayload));
+    //console.log("REQ.BODY :::: FINAL PAYLOAD :::::: " + JSON.stringify(finalPayload));
     res.json(finalPayload);
 
     //const response = await axios.post(url, finalPayload, options);
