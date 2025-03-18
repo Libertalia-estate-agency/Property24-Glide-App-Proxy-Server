@@ -597,7 +597,7 @@ app.post("/agents", async (req, res, next) => {
 app.post("/listings", async (req, res) => {
   try {
 
-    const url = `${PROPERTY24_API_BASE}/listings`;
+    //const url = `${PROPERTY24_API_BASE}/listings`;
 
     const options = {
       headers: {
@@ -606,9 +606,34 @@ app.post("/listings", async (req, res) => {
       },
     };
 
-    const listingData = req.body;
+    const { photos, ...listingData } = req.body;
+    //console.log("REQ.BODY :::: PHOTOS ::::::: " + JSON.stringify(photos));
+    //console.log("REQ.BODY :::: LISTING DATA :::::: " + JSON.stringify(listingData));
 
-    const response = await axios.post(url, listingData, options);
+    if (!photos || !Array.isArray(photos) || photos.length === 0) {
+      return res.status(400).json({ error: "No photos provided" });
+    }
+
+     // Convert all image URLs to Base64
+     const processedPhotos = await Promise.all(
+      photos.map(async (url) => {
+          const base64Image = await pictureToBase64(url);
+          return base64Image ? { bytes: base64Image } : null;
+      })
+    );
+
+    // Remove failed conversions
+    const finalPhotos = processedPhotos.filter(photo => photo !== null);
+
+    // Construct final JSON payload
+    const finalPayload = {
+        ...listingData,
+        photos: finalPhotos
+    };
+    console.log("REQ.BODY :::: FINAL PAYLOAD :::::: " + JSON.stringify(finalPayload));
+    //res.json(finalPayload);
+
+    const response = await axios.post(url, finalPayload, options);
     res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error creating listing:", error.response?.data || error.message);
