@@ -632,10 +632,10 @@ app.post("/listings", async (req, res) => {
         photos: finalPhotos
     };
     //console.log("REQ.BODY :::: FINAL PAYLOAD :::::: " + JSON.stringify(finalPayload));
-    res.json(finalPayload);
+    //res.json(finalPayload);
 
-    //const response = await axios.post(url, finalPayload, options);
-    //res.status(response.status).json(response.data);
+    const response = await axios.post(url, finalPayload, options);
+    res.status(response.status).json(response.data);
   } catch (error) {
     console.error("Error creating listing:", error.response?.data || error.message);
     res.status(error.response?.status || 500).json(error.response?.data || { error: "Failed to create listing" });
