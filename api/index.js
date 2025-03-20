@@ -111,6 +111,20 @@ async function pictureToBase64(imageUrl) {
   }
 }
 
+const processImages = async (photos) => {
+  return Promise.all(
+    photos.map(async (url) => {
+      try {
+        const base64Image = await pictureToBase64(url);
+        return base64Image ? { bytes: base64Image } : null;
+      } catch (error) {
+        console.error(`Error processing image: ${url}`, error);
+        return null; // Skip failed images
+      }
+    })
+  ).then((processedPhotos) => processedPhotos.filter(photo => photo !== null)); // Remove failed conversions
+};
+
 app.post("/convert", async (req, res) => {
   const { imageUrl } = req.body;
   if (!imageUrl) return res.status(400).json({ error: "Image URL is required" });
@@ -484,7 +498,6 @@ app.put("/agents/:agentId/profile-picture", async (req, res, next) => {
         bytes: bytes, // The image data in base64 or raw bytes
         mimeContentTyp: mimeContentType,
         caption: caption,
-
       };
 
       const response = await axios.put(url,payload, options)
@@ -608,23 +621,15 @@ app.post("/listings", async (req, res) => {
 
     const { photos, ...listingData } = req.body;
     //console.log("REQ.BODY :::: PHOTOS ::::::: " + JSON.stringify(photos));
-    //console.log("REQ.BODY :::: LISTING DATA :::::: " + JSON.stringify(listingData));
+    console.log("REQ.BODY :::: LISTING DATA :::::: " + JSON.stringify(listingData));
 
     if (!photos || !Array.isArray(photos) || photos.length === 0) {
       return res.status(400).json({ error: "No photos provided" });
     }
 
-     // Convert all image URLs to Base64
-     const processedPhotos = await Promise.all(
-      photos.map(async (url) => {
-          //console.log("URL :::: " , JSON.stringify(url));
-          const base64Image = await pictureToBase64(url);
-          return base64Image ? { bytes: base64Image } : null;
-      })
-    );
-
-    // Remove failed conversions
-    const finalPhotos = processedPhotos.filter(photo => photo !== null);
+    
+    // Process images before making the API call
+    const finalPhotos = await processImages(photos);
 
     // Construct final JSON payload
     const finalPayload = {
