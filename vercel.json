@@ -9,6 +9,12 @@
     "routes": [
       { "src": "/(.*)", "dest": "/api/index.js" },
       { "src": "/convert", "dest": "/api/index.js" }
-    ]
+    ],
+      "functions": {
+        "api/*": {
+          "memory": 1024
+        }
+      }
+
   }
   
